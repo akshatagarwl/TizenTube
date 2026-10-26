@@ -404,10 +404,9 @@ function deArrowify(items) {
       items.splice(index, 1);
       continue;
     }
-    if (!item.tileRenderer && item.lockupViewModel) continue;
-    if (!item?.lockupViewModel?.contentType !== 'LOCKUP_CONTENT_TYPE_VIDEO') continue;
+    if (!item.tileRenderer && item?.lockupViewModel?.contentType !== 'LOCKUP_CONTENT_TYPE_VIDEO') continue;
     if (configRead('enableDeArrow')) {
-      const videoID = item.tileRenderer.contentId || item.lockupViewModel.contentId;
+      const videoID = item.tileRenderer?.contentId || item.lockupViewModel?.contentId;
       fetch(`https://sponsor.ajay.app/api/branding?videoID=${videoID}`).then(res => res.json()).then(data => {
         if (data.titles.length > 0) {
           const mostVoted = data.titles.reduce((max, title) => max.votes > title.votes ? max : title);
