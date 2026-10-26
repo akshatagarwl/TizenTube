@@ -44,12 +44,12 @@ function applyBranding(item, videoID, data) {
       : item.lockupViewModel.metadata.lockupMetadataViewModel.title.content = mostVoted.title;
   }
 
-  if (data.thumbnails?.length > 0 && configRead('enableDeArrowThumbnails')) {
-    const mostVotedThumbnail = data.thumbnails.reduce((max, thumbnail) => max.votes > thumbnail.votes ? max : thumbnail);
-    if (mostVotedThumbnail.timestamp) {
+  if (configRead('enableDeArrowThumbnails') && isVideo(item)) {
+    const time = thumbnailTime(data);
+    if (time != null) {
       const thumbnails = [
         {
-          url: `https://dearrow-thumb.ajay.app/api/v1/getThumbnail?videoID=${videoID}&time=${mostVotedThumbnail.timestamp}`,
+          url: `https://dearrow-thumb.ajay.app/api/v1/getThumbnail?videoID=${videoID}&time=${time}`,
           width: 1280,
           height: 640
         }
@@ -59,6 +59,24 @@ function applyBranding(item, videoID, data) {
         : item.lockupViewModel.contentImage.thumbnailViewModel.image.sources = thumbnails;
     }
   }
+}
+
+function isVideo(item) {
+  return item.tileRenderer
+    ? !item.tileRenderer.contentType || item.tileRenderer.contentType === 'TILE_CONTENT_TYPE_VIDEO'
+    : item.lockupViewModel?.contentType === 'LOCKUP_CONTENT_TYPE_VIDEO';
+}
+
+// The video time of the thumbnail to show, or null to keep the original. Like DeArrow's default ("random time"
+// fallback), a video without a usable submitted thumbnail gets the frame at the random time the API picked for it.
+// Videos the API has no record of keep their thumbnail: the thumbnail server has no frame for them yet.
+function thumbnailTime(data) {
+  const best = data.thumbnails?.length > 0
+    ? data.thumbnails.reduce((max, thumbnail) => max.votes > thumbnail.votes ? max : thumbnail)
+    : null;
+  if (best && (best.locked || best.votes >= 0)) return best.original ? null : best.timestamp ?? null;
+  if (data.randomTime != null && data.videoDuration > 0) return data.randomTime * data.videoDuration;
+  return null;
 }
 
 /** Applies DeArrow branding to a tile or lockup, right away when it was prefetched, otherwise once it arrives. */
