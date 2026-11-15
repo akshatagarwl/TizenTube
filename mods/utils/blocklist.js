@@ -28,10 +28,17 @@ export function getVideoId(item) {
 
 // The first metadata line of a video tile is the channel name.
 export function getChannelInfo(item) {
+  if (item?.lockupViewModel?.contentType === 'LOCKUP_CONTENT_TYPE_CHANNEL') {
+    return { id: item.lockupViewModel.contentId, name: textOf(item.lockupViewModel.metadata?.lockupMetadataViewModel?.title).trim() };
+  }
+  if (/^UC[\w-]{22}$/.test(item?.tileRenderer?.contentId ?? '')) {
+    return { id: item.tileRenderer.contentId, name: textOf(item.tileRenderer.header?.tileHeaderRenderer?.title).trim() };
+  }
   const nameNode = item?.tileRenderer
     ? item.tileRenderer.metadata?.tileMetadataRenderer?.lines?.[0]?.lineRenderer?.items?.[0]?.lineItemRenderer?.text
     : item?.lockupViewModel?.metadata?.lockupMetadataViewModel?.metadata?.contentMetadataViewModel?.metadataRows?.[0]?.metadataParts?.[0]?.text;
-  const name = textOf(nameNode).trim();
+  const menuSubtitle = item?.lockupViewModel?.rendererContext?.commandContext?.onLongPress?.innertubeCommand?.showMenuCommand?.subtitle;
+  const name = (textOf(nameNode) || textOf(menuSubtitle)).trim();
   // Prefer the id attached to the channel name itself over any other id in the tile.
   const id = findChannelId(nameNode) ?? findChannelId(item);
   if (!name && !id) return null;
@@ -56,7 +63,8 @@ export function hideVideoLocally(videoId) {
 
 function isVideoTile(item) {
   return item?.tileRenderer?.style === 'TILE_STYLE_YTLR_DEFAULT'
-    || item?.lockupViewModel?.contentType === 'LOCKUP_CONTENT_TYPE_VIDEO';
+    || item?.lockupViewModel?.contentType === 'LOCKUP_CONTENT_TYPE_VIDEO'
+    || item?.lockupViewModel?.contentType === 'LOCKUP_CONTENT_TYPE_SHORT';
 }
 
 // Library, history and playlist pages show items the user chose on purpose.
@@ -84,8 +92,10 @@ function filterBlocked(items) {
   // Names of id-blocked channels, used only for tiles that carry no channel id.
   const blockedIdNames = new Set(blockedKeys.filter((k) => k.startsWith('id:') && names[k]).map((k) => nameKey(names[k])));
   return items.filter((item) => {
-    if (!isVideoTile(item)) return true;
-    if (hidden.has(getVideoId(item))) return false;
+    const isChannel = item?.lockupViewModel?.contentType === 'LOCKUP_CONTENT_TYPE_CHANNEL'
+      || /^UC[\w-]{22}$/.test(item?.tileRenderer?.contentId ?? '');
+    if (!isVideoTile(item) && !isChannel) return true;
+    if (!isChannel && hidden.has(getVideoId(item))) return false;
     const channel = getChannelInfo(item);
     if (!channel) return true;
     const nameBlocked = channel.name && (blockedNameOnly.has(nameKey(channel.name))

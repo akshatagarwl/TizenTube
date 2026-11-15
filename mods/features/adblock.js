@@ -4,6 +4,7 @@ import resolveCommand from '../resolveCommand.js';
 import { timelyAction, longPressData, MenuServiceItemRenderer, ShelfRenderer, TileRenderer, ButtonRenderer } from '../ui/ytUI.js';
 import { findFeedbackToken } from '../utils/innerTubeCalls.js';
 import { getVideoId, getChannelInfo, removeBlocked } from '../utils/blocklist.js';
+import { filterBlockedResponse } from '../utils/filterBlockedResponse.js';
 import { PatchSettings } from '../ui/customYTSettings.js';
 import { t } from 'i18next';
 
@@ -18,8 +19,9 @@ import { t } from 'i18next';
  */
 const origParse = JSON.parse;
 JSON.parse = function () {
-  const r = origParse.apply(this, arguments);
+  let r = origParse.apply(this, arguments);
   try {
+    r = filterBlockedResponse(r);
     const adBlockEnabled = configRead('enableAdBlock');
     const signinReminderEnabled = configRead('enableSigninReminder');
 
