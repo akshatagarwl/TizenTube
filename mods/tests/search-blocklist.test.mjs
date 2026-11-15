@@ -75,8 +75,16 @@ test('explicit history/library pages remain exempt', () => {
   assert.deepEqual(filterBlockedResponse(response).items, [card('bad')]);
 });
 
+test('owned shows, podcasts and playlists are blocked without hiding other owners', () => {
+  blockChannel({id: channelId, name: 'Example'});
+  for (const type of ['SHOW', 'PODCAST', 'PLAYLIST']) {
+    const out = filterBlockedResponse({items: [card('bad', 'Example', type), card('good', 'Another', type)]});
+    assert.deepEqual(out.items, [card('good', 'Another', type)]);
+  }
+});
+
 test('unrelated playlists/navigation and no-block responses are unchanged', () => {
-  const response = {items: [card('playlist', 'Example', 'PLAYLIST'), {buttonRenderer: {text: 'Next'}}]};
+  const response = {items: [card('playlist', 'Another', 'PLAYLIST'), {buttonRenderer: {text: 'Next'}}]};
   assert.equal(filterBlockedResponse(response), response);
   blockChannel({id: channelId, name: 'Example'});
   assert.deepEqual(filterBlockedResponse(response), response);

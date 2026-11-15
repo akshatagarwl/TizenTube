@@ -94,8 +94,9 @@ function filterBlocked(items) {
   return items.filter((item) => {
     const isChannel = item?.lockupViewModel?.contentType === 'LOCKUP_CONTENT_TYPE_CHANNEL'
       || /^UC[\w-]{22}$/.test(item?.tileRenderer?.contentId ?? '');
-    if (!isVideoTile(item) && !isChannel) return true;
-    if (!isChannel && hidden.has(getVideoId(item))) return false;
+    const isCollection = ['LOCKUP_CONTENT_TYPE_SHOW', 'LOCKUP_CONTENT_TYPE_PODCAST', 'LOCKUP_CONTENT_TYPE_PLAYLIST'].includes(item?.lockupViewModel?.contentType);
+    if (!isVideoTile(item) && !isChannel && !isCollection) return true;
+    if (isVideoTile(item) && hidden.has(getVideoId(item))) return false;
     const channel = getChannelInfo(item);
     if (!channel) return true;
     const nameBlocked = channel.name && (blockedNameOnly.has(nameKey(channel.name))
