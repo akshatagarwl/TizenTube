@@ -1,4 +1,7 @@
 # ▶️ TizenTube
+
+> **This fork's channel-filter work:** [`feat/pr720-channel-block`](https://github.com/akshatagarwl/TizenTube/tree/feat/pr720-channel-block). See [channel-filter documentation](docs/CHANNEL_FILTERS.md), [public CC0 preference lists + MIT builder](https://github.com/akshatagarwl/tv-channel-lists), and the [Android/iPhone setup preview](https://github.com/akshatagarwl/tv-setup). Personal lists/account data are not bundled. Publishing a list does not update installed TV snapshots.
+
 <p align="center">
     <img width="600px" src=".github/assets/TizenTube Standalone Banner.png">
     <br>
