@@ -1,4 +1,5 @@
-import { configRead, configWrite } from '../config.js';
+import { configRead, configWrite, configChangeEmitter } from '../config.js';
+import { communityIndex } from './communityBlocklist.js';
 
 const MAX_HIDDEN_VIDEOS = 1000;
 
@@ -80,17 +81,38 @@ export function removeBlocked(items) {
   }
 }
 
+let cachedKeys, cachedNames, cachedHidden, cachedPersonal;
+configChangeEmitter.addEventListener('configChange', ({ detail }) => {
+  if (['blockedChannels', 'blockedChannelNames', 'hiddenVideos'].includes(detail.key)) cachedPersonal = null;
+});
+function personalIndex() {
+  const keys = configRead('blockedChannels');
+  const names = configRead('blockedChannelNames');
+  const hidden = configRead('hiddenVideos');
+  if (!cachedPersonal || keys !== cachedKeys || names !== cachedNames || hidden !== cachedHidden) {
+    cachedPersonal = {
+      ids: new Set(keys.filter(key => key.startsWith('id:'))),
+      nameOnly: new Set(keys.filter(key => key.startsWith('name:'))),
+      idNames: new Set(keys.filter(key => key.startsWith('id:') && names[key]).map(key => nameKey(names[key]))),
+      hidden: new Set(hidden)
+    };
+    cachedKeys = keys;
+    cachedNames = names;
+    cachedHidden = hidden;
+  }
+  return cachedPersonal;
+}
+
+export function hasChannelFilters() {
+  return configRead('blockedChannels').length || configRead('hiddenVideos').length || communityIndex().ids.size;
+}
+
 function filterBlocked(items) {
   if (!Array.isArray(items)) return items;
   if (EXEMPT_PAGES.test(window.location?.hash ?? '')) return items;
-  const blockedKeys = configRead('blockedChannels');
-  const hidden = new Set(configRead('hiddenVideos'));
-  if (!blockedKeys.length && !hidden.size) return items;
-  const blockedIds = new Set(blockedKeys.filter((k) => k.startsWith('id:')));
-  const names = configRead('blockedChannelNames');
-  const blockedNameOnly = new Set(blockedKeys.filter((k) => k.startsWith('name:')));
-  // Names of id-blocked channels, used only for tiles that carry no channel id.
-  const blockedIdNames = new Set(blockedKeys.filter((k) => k.startsWith('id:') && names[k]).map((k) => nameKey(names[k])));
+  if (!hasChannelFilters()) return items;
+  const { ids: blockedIds, nameOnly: blockedNameOnly, idNames: blockedIdNames, hidden } = personalIndex();
+  const community = communityIndex();
   return items.filter((item) => {
     const isChannel = item?.lockupViewModel?.contentType === 'LOCKUP_CONTENT_TYPE_CHANNEL'
       || /^UC[\w-]{22}$/.test(item?.tileRenderer?.contentId ?? '');
@@ -101,6 +123,8 @@ function filterBlocked(items) {
     if (!channel) return true;
     const nameBlocked = channel.name && (blockedNameOnly.has(nameKey(channel.name))
       || (!channel.id && blockedIdNames.has(nameKey(channel.name))));
-    return !(channel.id && blockedIds.has(idKey(channel.id))) && !nameBlocked;
+    const communityBlocked = channel.id ? community.ids.has(channel.id)
+      : channel.name && community.names.has(channel.name.toLowerCase());
+    return !(channel.id && blockedIds.has(idKey(channel.id))) && !nameBlocked && !communityBlocked;
   });
 }

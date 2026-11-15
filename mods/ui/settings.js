@@ -3,6 +3,7 @@ import { showModal, buttonItem, overlayPanelItemListRenderer, scrollPaneRenderer
 import qrcode from 'qrcode-npm';
 import { t } from 'i18next';
 import resolveCommand from '../resolveCommand.js';
+import { communitySummary } from '../utils/communityBlocklist.js';
 
 const qrcodes = {};
 
@@ -470,6 +471,23 @@ export default function modernUI(update, parameters) {
                 subtitle: t('settings.options.uiSettings.subtitle')
             },
             options: [
+                {
+                    name: `Community lists (${communitySummary().count.toLocaleString()} channels)`,
+                    icon: 'BLOCK',
+                    value: null,
+                    menuId: 'tt-community-blocklists',
+                    arrayToEdit: 'enabledCommunitySources',
+                    menuHeader: { title: 'Community channel lists', subtitle: 'Independent, subjective lists. Uncheck a source to disable it; refresh results afterward.' },
+                    options: [
+                        { name: 'AiSList — high-confidence AI content', source: 'aislist' },
+                        { name: 'SlopTube — AI / low-effort content (archived)', source: 'sloptube' },
+                        { name: 'MinimalTube — personal entertainment blocklist', source: 'minimaltube' },
+                        { name: 'Religion / spirituality / new-age — curated', source: 'religion' }
+                    ].map(({ name, source }) => ({
+                        name: `${name} (${(communitySummary().counts[source] || 0).toLocaleString()})`,
+                        icon: 'BLOCK', value: source
+                    }))
+                },
                 (() => {
                     const blockedChannels = configRead('blockedChannels');
                     const names = configRead('blockedChannelNames');

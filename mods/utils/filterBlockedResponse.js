@@ -1,11 +1,10 @@
-import { configRead } from '../config.js';
-import { removeBlocked } from './blocklist.js';
+import { hasChannelFilters, removeBlocked } from './blocklist.js';
 
 // Search now mixes shelves with clusterShelfRenderer / clusterRenderer groups.
 // Filter actual cards wherever those groups or continuation commands nest them,
 // without walking the large command/thumbnail trees inside individual cards.
 export function filterBlockedResponse(response) {
-  if (!configRead('blockedChannels').length && !configRead('hiddenVideos').length) return response;
+  if (!hasChannelFilters()) return response;
   if (/FElibrary|FEhistory|FEplaylist|\/playlist|[?&]list=/i.test(window.location?.hash ?? '')) return response;
 
   function visit(value, depth = 0) {

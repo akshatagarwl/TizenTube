@@ -73,6 +73,8 @@ const defaultConfig = {
   hideRelatedVideosPlayer: false,
   blockedChannels: [],
   blockedChannelNames: {},
+  enabledCommunitySources: ['aislist', 'sloptube', 'minimaltube', 'religion'],
+  communityAllowedChannels: [],
   hiddenVideos: [],
 };
 
