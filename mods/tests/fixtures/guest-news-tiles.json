@@ -1,0 +1,70 @@
+[
+  {
+    "tileRenderer": {
+      "style": "TILE_STYLE_YTLR_DEFAULT",
+      "contentId": "example0",
+      "metadata": {
+        "tileMetadataRenderer": {
+          "lines": [
+            {
+              "lineRenderer": {
+                "items": [
+                  {
+                    "lineItemRenderer": {
+                      "text": {
+                        "runs": [
+                          {
+                            "text": "Blocked Example",
+                            "navigationEndpoint": {
+                              "browseEndpoint": {
+                                "browseId": "UCaaaaaaaaaaaaaaaaaaaaaa"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "tileRenderer": {
+      "style": "TILE_STYLE_YTLR_DEFAULT",
+      "contentId": "example1",
+      "metadata": {
+        "tileMetadataRenderer": {
+          "lines": [
+            {
+              "lineRenderer": {
+                "items": [
+                  {
+                    "lineItemRenderer": {
+                      "text": {
+                        "runs": [
+                          {
+                            "text": "Allowed Example",
+                            "navigationEndpoint": {
+                              "browseEndpoint": {
+                                "browseId": "UCbbbbbbbbbbbbbbbbbbbbbb"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+]

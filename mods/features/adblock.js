@@ -5,6 +5,7 @@ import { timelyAction, longPressData, MenuServiceItemRenderer, ShelfRenderer, Ti
 import { findFeedbackToken } from '../utils/innerTubeCalls.js';
 import { getVideoId, getChannelInfo, removeBlocked } from '../utils/blocklist.js';
 import { filterBlockedResponse } from '../utils/filterBlockedResponse.js';
+import { playbackGate } from '../utils/playbackBlocklist.js';
 import { PatchSettings } from '../ui/customYTSettings.js';
 import { t } from 'i18next';
 
@@ -20,6 +21,7 @@ import { t } from 'i18next';
 const origParse = JSON.parse;
 JSON.parse = function () {
   let r = origParse.apply(this, arguments);
+  r = playbackGate.observe(r);
   try {
     r = filterBlockedResponse(r);
     const adBlockEnabled = configRead('enableAdBlock');

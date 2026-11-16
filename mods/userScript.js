@@ -8,6 +8,7 @@ import "core-js/proposals/object-getownpropertydescriptors";
 
 import './translations/index.js'
 import "./domrect-polyfill";
+import "./features/playbackGate.js";
 import "./features/adblock.js";
 import "./features/sponsorblock.js";
 import "./ui/ui.js";
